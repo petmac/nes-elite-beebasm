@@ -65,11 +65,11 @@ ENDIF
 ;     to $C000 when it starts up via the JMP ($FFFC), irrespective of which
 ;     ROM bank is mapped to $C000.
 ;
-;   * We put the same reset routine (this routine, ResetMMC1) at the start of
+;   * We put the same reset routine (this routine, ResetMMC1_b7) at the start of
 ;     every ROM bank, so the same routine gets run, whichever ROM bank is mapped
 ;     to $C000.
 ;
-; This ResetMMC1 routine is therefore called when the NES starts up, whatever
+; This ResetMMC1_b7 routine is therefore called when the NES starts up, whatever
 ; bank configuration ends up being. It then switches ROM bank 7 to $C000 and
 ; jumps into bank 7 at the game's entry point BEGIN, which starts the game.
 ;

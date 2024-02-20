@@ -25,11 +25,13 @@
 ;
 ; ******************************************************************************
 
+IF _BANK = 4
+
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
  INCLUDE "1-source-files/main-sources/elite-source-common.asm"
 
- INCLUDE "1-source-files/main-sources/elite-source-bank-7.asm"
+ENDIF
 
 ; ******************************************************************************
 ;
@@ -39,14 +41,14 @@
 ;
 ; ******************************************************************************
 
- CODE% = $8000
- LOAD% = $8000
+ CODE_BANK_4% = $8000
+ LOAD_BANK_4% = $8000
 
- ORG CODE%
+ ORG CODE_BANK_4%
 
 ; ******************************************************************************
 ;
-;       Name: ResetMMC1
+;       Name: ResetMMC1_b4
 ;       Type: Subroutine
 ;   Category: Start and end
 ;    Summary: The MMC1 mapper reset routine at the start of the ROM bank
@@ -63,17 +65,17 @@
 ;     to $C000 when it starts up via the JMP ($FFFC), irrespective of which
 ;     ROM bank is mapped to $C000.
 ;
-;   * We put the same reset routine (this routine, ResetMMC1) at the start of
+;   * We put the same reset routine (this routine, ResetMMC1_b4) at the start of
 ;     every ROM bank, so the same routine gets run, whichever ROM bank is mapped
 ;     to $C000.
 ;
-; This ResetMMC1 routine is therefore called when the NES starts up, whatever
+; This ResetMMC1_b4 routine is therefore called when the NES starts up, whatever
 ; the bank configuration ends up being. It then switches ROM bank 7 to $C000 and
 ; jumps into bank 7 at the game's entry point BEGIN, which starts the game.
 ;
 ; ******************************************************************************
 
-.ResetMMC1
+.ResetMMC1_b4
 
  SEI                    ; Disable interrupts
 
@@ -104,7 +106,7 @@
 
 ; ******************************************************************************
 ;
-;       Name: Interrupts
+;       Name: Interrupts_b4
 ;       Type: Subroutine
 ;   Category: Start and end
 ;    Summary: The IRQ and NMI handler while the MMC1 mapper reset routine is
@@ -112,7 +114,7 @@
 ;
 ; ******************************************************************************
 
-.Interrupts
+.Interrupts_b4
 
 IF _NTSC
 
@@ -124,7 +126,7 @@ IF _NTSC
                         ; interrupts that go via the vector at $FFFA will end up
                         ; here and be dealt with
                         ;
-                        ; Once bank 7 is switched into $C000 by the ResetMMC1
+                        ; Once bank 7 is switched into $C000 by the ResetMMC1_b4
                         ; routine, the vector is overwritten with the last two
                         ; bytes of bank 7, which point to the IRQ routine
 
@@ -3415,34 +3417,34 @@ ENDIF
 
  FOR I%, P%, $BFF9
 
-  EQUB $FF              ; Pad out the rest of the ROM bank with $FF
+  EQUB $FF                ; Pad out the rest of the ROM bank with $FF
 
  NEXT
 
 IF _NTSC
 
- EQUW Interrupts+$4000  ; Vector to the NMI handler in case this bank is loaded
-                        ; into $C000 during start-up (the handler contains an
-                        ; RTI so the interrupt is processed but has no effect)
+ EQUW Interrupts_b4+$4000 ; Vector to the NMI handler in case this bank is loaded
+                          ; into $C000 during start-up (the handler contains an
+                          ; RTI so the interrupt is processed but has no effect)
 
- EQUW ResetMMC1+$4000   ; Vector to the RESET handler in case this bank is
-                        ; loaded into $C000 during start-up (the handler resets
-                        ; the MMC1 mapper to map bank 7 into $C000 instead)
+ EQUW ResetMMC1_b4+$4000  ; Vector to the RESET handler in case this bank is
+                          ; loaded into $C000 during start-up (the handler resets
+                          ; the MMC1 mapper to map bank 7 into $C000 instead)
 
- EQUW Interrupts+$4000  ; Vector to the IRQ/BRK handler in case this bank is
-                        ; loaded into $C000 during start-up (the handler
-                        ; contains an RTI so the interrupt is processed but has
-                        ; no effect)
+ EQUW Interrupts_b4+$4000 ; Vector to the IRQ/BRK handler in case this bank is
+                          ; loaded into $C000 during start-up (the handler
+                          ; contains an RTI so the interrupt is processed but has
+                          ; no effect)
 
 ELIF _PAL
 
- EQUW NMI               ; Vector to the NMI handler
+ EQUW NMI                 ; Vector to the NMI handler
 
- EQUW ResetMMC1+$4000   ; Vector to the RESET handler in case this bank is
-                        ; loaded into $C000 during start-up (the handler resets
-                        ; the MMC1 mapper to map bank 7 into $C000 instead)
+ EQUW ResetMMC1_b4+$4000  ; Vector to the RESET handler in case this bank is
+                          ; loaded into $C000 during start-up (the handler resets
+                          ; the MMC1 mapper to map bank 7 into $C000 instead)
 
- EQUW IRQ               ; Vector to the IRQ/BRK handler
+ EQUW IRQ                 ; Vector to the IRQ/BRK handler
 
 ENDIF
 
@@ -3452,5 +3454,9 @@ ENDIF
 ;
 ; ******************************************************************************
 
- PRINT "S.bank4.bin ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
- SAVE "3-assembled-output/bank4.bin", CODE%, P%, LOAD%
+IF _BANK = 4
+
+ PRINT "S.bank4.bin ", ~CODE_BANK_4%, " ", ~P%, " ", ~LOAD_BANK_4%, " ", ~LOAD_BANK_4%
+ SAVE "3-assembled-output/bank4.bin", CODE_BANK_4%, P%, LOAD_BANK_4%
+
+ENDIF
