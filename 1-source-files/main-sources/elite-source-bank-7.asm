@@ -25,8 +25,6 @@
 ;
 ; ******************************************************************************
 
- INCLUDE "1-source-files/main-sources/elite-bank-options.asm"
-
 IF _BANK = 7
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"

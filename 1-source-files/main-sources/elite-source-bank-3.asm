@@ -27,8 +27,6 @@
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
- _BANK = 3
-
  INCLUDE "1-source-files/main-sources/elite-source-common.asm"
 
  INCLUDE "1-source-files/main-sources/elite-source-bank-7.asm"
