@@ -55,24 +55,48 @@ else
   suffix=-pal
 endif
 
-.PHONY:all
-all:
-	echo _VERSION=7 > 1-source-files/main-sources/elite-build-options.asm
-	echo _VARIANT=$(variant-number) >> 1-source-files/main-sources/elite-build-options.asm
-	echo _REMOVE_CHECKSUMS=$(remove-checksums) >> 1-source-files/main-sources/elite-build-options.asm
-	echo _MATCH_ORIGINAL_BINARIES=$(match-original-binaries) >> 1-source-files/main-sources/elite-build-options.asm
-	echo _MAX_COMMANDER=$(max-commander) >> 1-source-files/main-sources/elite-build-options.asm
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-header.asm -v > 3-assembled-output/compile.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-0.asm -v -D _BANK=0 > 3-assembled-output/compile0.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-1.asm -v -D _BANK=1 > 3-assembled-output/compile1.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-2.asm -v -D _BANK=2 > 3-assembled-output/compile2.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-3.asm -v -D _BANK=3 > 3-assembled-output/compile3.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-4.asm -v -D _BANK=4 > 3-assembled-output/compile4.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-5.asm -v -D _BANK=5 > 3-assembled-output/compile5.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-6.asm -v -D _BANK=6 > 3-assembled-output/compile6.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-7.asm -v -D _BANK=7 > 3-assembled-output/compile7.txt
-	cat 3-assembled-output/header.bin 3-assembled-output/bank0.bin 3-assembled-output/bank1.bin 3-assembled-output/bank2.bin 3-assembled-output/bank3.bin 3-assembled-output/bank4.bin 3-assembled-output/bank5.bin 3-assembled-output/bank6.bin 3-assembled-output/bank7.bin > 3-assembled-output/elite.bin
-	cp 3-assembled-output/elite.bin 5-compiled-game-discs/ELITE$(suffix).NES
+.PHONY: all
+all: 5-compiled-game-discs/ELITE$(suffix).NES
 ifneq ($(verify), no)
 	@$(PYTHON) 2-build-files/crc32.py 4-reference-binaries$(folder) 3-assembled-output
 endif
+
+5-compiled-game-discs/ELITE$(suffix).NES: 3-assembled-output/elite.bin
+	cp $< $@
+
+3-assembled-output/elite.bin: \
+	3-assembled-output/header.bin \
+	3-assembled-output/bank0.bin \
+	3-assembled-output/bank1.bin \
+	3-assembled-output/bank2.bin \
+	3-assembled-output/bank3.bin \
+	3-assembled-output/bank4.bin \
+	3-assembled-output/bank5.bin \
+	3-assembled-output/bank6.bin \
+	3-assembled-output/bank7.bin
+	cat $^ > $@
+
+3-assembled-output/header.bin: \
+	1-source-files/main-sources/elite-build-options.asm \
+	1-source-files/main-sources/elite-source-header.asm
+	$(BEEBASM) -i 1-source-files/main-sources/elite-source-header.asm -v > 3-assembled-output/compile.txt
+
+3-assembled-output/bank%.bin: \
+	1-source-files/main-sources/elite-build-options.asm \
+	1-source-files/main-sources/elite-source-bank-0.asm \
+	1-source-files/main-sources/elite-source-bank-1.asm \
+	1-source-files/main-sources/elite-source-bank-2.asm \
+	1-source-files/main-sources/elite-source-bank-3.asm \
+	1-source-files/main-sources/elite-source-bank-4.asm \
+	1-source-files/main-sources/elite-source-bank-5.asm \
+	1-source-files/main-sources/elite-source-bank-6.asm \
+	1-source-files/main-sources/elite-source-bank-7.asm \
+	1-source-files/main-sources/elite-source-common.asm
+	$(BEEBASM) -i 1-source-files/main-sources/elite-source-bank-$*.asm -v -D _BANK=$* > 3-assembled-output/compile$*.txt
+
+1-source-files/main-sources/elite-build-options.asm:
+	echo _VERSION=7 > $@
+	echo _VARIANT=$(variant-number) >> $@
+	echo _REMOVE_CHECKSUMS=$(remove-checksums) >> $@
+	echo _MATCH_ORIGINAL_BINARIES=$(match-original-binaries) >> $@
+	echo _MAX_COMMANDER=$(max-commander) >> $@
